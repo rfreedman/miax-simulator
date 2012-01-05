@@ -1,13 +1,11 @@
 package com.chariotsolutions.miami;
 
 
-import com.chariotsolutions.miami.jdk.RollUpQuery;
 import com.chariotsolutions.miami.jdk.RiakRepository;
+import com.chariotsolutions.miami.jdk.RollUpQuery;
 import com.chariotsolutions.miami.jdk.StatStorageItem;
-import com.sun.javaws.exceptions.ExitException;
 import org.junit.Test;
 
-import javax.management.Query;
 import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;

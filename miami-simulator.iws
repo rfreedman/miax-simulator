@@ -72,19 +72,19 @@
   </component>
   <component name="FileEditorManager">
     <leaf>
-      <file leaf-file-name="RiakRepositoryTest.java" pinned="false" current="false" current-in-tab="false">
+      <file leaf-file-name="RiakRepositoryTest.java" pinned="false" current="true" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/test/java/com/chariotsolutions/miami/RiakRepositoryTest.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="311" column="40" selection-start="11216" selection-end="11216" vertical-scroll-proportion="0.0">
+            <state line="7" column="0" selection-start="221" selection-end="221" vertical-scroll-proportion="0.11744966">
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="RiakRepository.java" pinned="false" current="true" current-in-tab="true">
+      <file leaf-file-name="RiakRepository.java" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/main/java/com/chariotsolutions/miami/jdk/RiakRepository.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="302" column="30" selection-start="12091" selection-end="12091" vertical-scroll-proportion="0.2852349">
+            <state line="302" column="30" selection-start="12091" selection-end="12091" vertical-scroll-proportion="0.0">
               <folding />
             </state>
           </provider>
@@ -715,7 +715,7 @@
   </component>
   <component name="ToolWindowManager">
     <frame x="0" y="22" width="1627" height="1028" extended-state="0" />
-    <editor active="false" />
+    <editor active="true" />
     <layout>
       <window_info id="Changes" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Phing Build" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
@@ -730,7 +730,7 @@
       <window_info id="Maven Projects" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.15462612" sideWeight="0.45833334" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.4" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Dependency Viewer" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
-      <window_info id="Project" active="true" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.32953104" sideWeight="0.45833334" order="0" side_tool="false" content_ui="tabs" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.32953104" sideWeight="0.45833334" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Run" active="false" anchor="bottom" auto_hide="true" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.5416667" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
@@ -876,11 +876,6 @@
         <state line="66" column="43" selection-start="2528" selection-end="2528" vertical-scroll-proportion="1.1288483" />
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/test/java/com/chariotsolutions/miami/RiakRepositoryTest.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="311" column="40" selection-start="11216" selection-end="11216" vertical-scroll-proportion="0.0" />
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/main/java/com/chariotsolutions/miami/jdk/StatsMessage.java">
       <provider selected="true" editor-type-id="text-editor">
         <state line="91" column="44" selection-start="4210" selection-end="4210" vertical-scroll-proportion="0.0" />
@@ -898,7 +893,14 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/src/main/java/com/chariotsolutions/miami/jdk/RiakRepository.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="302" column="30" selection-start="12091" selection-end="12091" vertical-scroll-proportion="0.2852349">
+        <state line="302" column="30" selection-start="12091" selection-end="12091" vertical-scroll-proportion="0.0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/test/java/com/chariotsolutions/miami/RiakRepositoryTest.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="7" column="0" selection-start="221" selection-end="221" vertical-scroll-proportion="0.11744966">
           <folding />
         </state>
       </provider>
