@@ -1,0 +1,116 @@
+// get the values of the items in the current_stats bucket
+
+{"inputs":"current_stats",
+  "query":[{"map":{"language":"javascript",
+                   "name":"Riak.mapValuesJson",
+                   "keep":true}}
+          ]
+}
+
+
+// get the keys of the items in the current_stats bucket
+{"inputs":"current_stats",
+ "query":[{"map":{"language":"javascript",
+                  "source":"function(value, keyData, arg) { return [value.key]}",
+                  "keep":true}}]
+}
+
+
+// return the key/value pairs in the current_stats bucket
+{"inputs":"current_stats",
+ "query":[{"map":{"language":"javascript",
+                  "source":"function(value, keyData, arg) { var data = Riak.mapValuesJson(value)[0]; return [[value.key, data]];}",
+                  "keep":true}}]
+}
+
+
+
+
+
+{"inputs":"json_test",
+ "query":[{"map":{"language":"javascript",
+                  "source":"function(value, keyData, arg) { return [[value.values][0][0].data];}",
+                  "keep":true}}]
+}
+
+{"inputs":"json_test",
+ "query":[{"map":{"language":"javascript",
+                  "source":"function(value, keyData, arg) { var data = [[value.values][0][0].data][0]; return [data]}",
+                  "keep":true}}]
+}
+
+
+
+{"inputs":"json_test",
+  "query":[{"map":{"language":"javascript",
+                   "name":"Riak.mapValues",
+                   "keep":true}}
+          ]
+}
+
+
+{"inputs":"json_test",
+ "query":[{"map":{"language":"javascript",
+                  "source":"function(value, keyData, arg) {var data = Riak.mapValues(value)[0]; return [[value.key, data]];}",
+                  "keep":true}}]
+}
+
+
+// return json doc via JSON.parse
+{"inputs":"json_test",
+ "query":[{"map":{"language":"javascript",
+                  "source":"function(value, keyData, arg) {var data = Riak.mapValues(value)[0]; var j = JSON.parse(data); return[j];}",
+                  "keep":true}}]
+}
+
+
+
+// return json object stored in json doc the better way
+{"inputs":"json_test",
+ "query":[{"map":{"language":"javascript",
+                  "source":"function(value, keyData, arg) {var data = Riak.mapValuesJson(value)[0]; return [ data ];}",
+                  "keep":true}}]
+}
+
+// return pieces of json
+{"inputs":"json_test",
+ "query":[{"map":{"language":"javascript",
+                  "source":"function(value, keyData, arg) {var data = Riak.mapValuesJson(value)[0]; return [ {\"foo\":data.foo, \"baz\":data.baz} ];}",
+                  "keep":true}}]
+}
+
+
+// find the one with the max value? does this make sense?
+{"inputs":"json_test",
+ "query":[{"map":{"language":"javascript",
+                  "source":"function(value, keyData, arg) {var data = Riak.mapValuesJson(value)[0]; return [ {\"foo\":data.foo, \"baz\":data.baz} ];}"
+}},
+          {"reduce":{"language":"javascript","name":"Riak.reduceMax","keep":true}}]
+}
+
+
+// find the one with the max value? does this make sense?
+{"inputs":"json_test",
+ "query":[{"map":{"language":"javascript",
+                  "source":"function(value, keyData, arg) {var data = Riak.mapValuesJson(value)[0]; return [ {\"foo\":data.foo, \"baz\":data.baz} ];}"
+}},
+          {"reduce":{"language":"javascript", "source":"function(values, arg){return values.reduce(function(acc, item){for(baz in item){acc[baz] += item[baz]; return acc;}});}"  }}]
+}
+
+
+///////////////////
+{"reduce":{
+   "language":"javascript",
+   "source":"function(values, arg){ 
+     return values.reduce(function(acc, item){
+       for(state in item){
+         if(acc[state])
+          acc[state] += item[state];
+         else
+          acc[state] = item[state];
+       }
+       return acc;
+     });
+    }"
+  }
+}]}
