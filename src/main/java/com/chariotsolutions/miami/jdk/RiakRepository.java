@@ -23,8 +23,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
-public class RiakRepository implements Repository {
-
+public class RiakRepository {} //implements Repository {
+/*
     private static final String CURRENT_STATS_BUCKET = "current_stats";
     private static final String USER_META_STATS_KEY = "xxx-user-meta-stats-xxx";
     private static final String USER_META_STATS_KEY_DELIMITER = "|";
@@ -92,12 +92,7 @@ public class RiakRepository implements Repository {
 
     }
 
-    /**
-     * Stores/updates the current value of a statistics packet.
-     *
-     * @param item The item to be stored.
-     * @return the unique storage key for the item
-     */
+
     public String storeCurrentItem(StatStorageItem item) throws Exception {
         String key = generateCurrentStatisticsKey(item);
         String value = "" + item.getTimestamp();
@@ -120,11 +115,7 @@ public class RiakRepository implements Repository {
         return key;
     }
 
-    /**
-     * adds all of the permutations of two or more indicies that will be required for
-     * retrieval for roll-ups.
-     * (This is because only one index can be used in a query).
-     */
+
     private void addIndicies(IRiakObject riakObject, StatStorageItem item) {
 
         // *   - by type and mpid
@@ -150,12 +141,6 @@ public class RiakRepository implements Repository {
     }
 
 
-    /**
-     * Gets the current value of a statistics packets by key.
-     *
-     * @param key The item's key
-     * @return The current item to which the key refers.
-     */
     public StatStorageItem getCurrentItemByKey(String key) throws Exception {
         RiakResponse fetched = rawClient.fetch(CURRENT_STATS_BUCKET, key);
         IRiakObject result = fetched.getRiakObjects()[0];
@@ -174,18 +159,7 @@ public class RiakRepository implements Repository {
         return item;
     }
 
-    /**
-     * Gets all of the current statistics packets matching the parameters.
-     *
-     * @param type    The service type (e.g. "MEI")
-     * @param cloudId - The Cloud identifier
-     * @param mpId    - The Market Participant identifier
-     * @param appId   - The application instance id
-     *                <p/>
-     *                A null value for cloudId, mpId, or appId means "don't care", so for example, specifying just 'type'
-     *                will get all stats packages for the type, regardless of cloud, firm, or app instance,
-     *                while specifying 'type' and 'mpId' will get stats for the specified type for the specified firm.
-     */
+
     public Collection<StatStorageItem> getCurrentItems(String type, Integer cloudId, Integer mpId, Integer appId) throws Exception {
         Collection<StatStorageItem> items = new ArrayList<StatStorageItem>();
         Collection<String> keys = getCurrentItemKeys(type, cloudId, mpId, appId);
@@ -197,18 +171,7 @@ public class RiakRepository implements Repository {
         return items;
     }
 
-    /**
-     * Gets all of the keys for the current statistics packets matching the parameters.
-     *
-     * @param type    The service type (e.g. "MEI") - Mandatory - may not be null
-     * @param cloudId - The Cloud identifier - may be null
-     * @param mpId    - The Market Participant identifier - may be null
-     * @param appId   - The application instance id - may be null
-     *                <p/>
-     *                A null value for cloudId, mpId, or appId means "don't care", so for example, specifying just 'type'
-     *                will get all keys the type, regardless of cloud, firm, or app instance,
-     *                while specifying 'type' and 'mpId' will get keys for the specified type for the specified firm.
-     */
+
     Collection<String> getCurrentItemKeys(String type, Integer cloudId, Integer mpId, Integer appId) throws Exception {
         StringBuilder indexName = new StringBuilder("type");
         StringBuilder indexValue = new StringBuilder(type);
@@ -234,11 +197,7 @@ public class RiakRepository implements Repository {
         return keys;
     }
 
-    /*
-    * Note that bucket keys are cached, and the key list is not immediately updated by the delete operation,
-    * so invoking this method twice in quick succession may report deletion of some number
-    * of items the second time, even though they have all been deleted already.
-    */
+
     public int deleteCurrentStats() throws Exception {
         int itemsDeleted = emptyBucket(CURRENT_STATS_BUCKET);
         return itemsDeleted;
@@ -289,15 +248,7 @@ public class RiakRepository implements Repository {
     }
 
 
-    /**
-     * Note that listKeys() is cached, and not immediately updated by the delete operation,
-     * so invoking this method twice in quick succession may report deletion of some number
-     * of keys the second time, even though they have all been deleted already.
-     *
-     * @param bucketName
-     * @return
-     * @throws Exception
-     */
+
     private int emptyBucket(String bucketName) throws Exception {
         int itemsDeleted = 0;
         Iterator<String> keys = rawClient.listKeys(bucketName).iterator();
@@ -374,3 +325,4 @@ public class RiakRepository implements Repository {
 
     }
 }
+*/

@@ -81,6 +81,7 @@ public class StatsMessage implements Runnable {
                         if(latencyStats != null) {
                             LatencyDataMessage ldm = new LatencyDataMessage(size, type, item, networkData, latencyStats, elapsedSeconds);
                             child = ldm;
+                            instance.storeStats(ldm, applicationId);
                         } // else wait for a configuration packet
                         break;
                     case 5:

@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class StatStorageItem {
+    String statType;
     String type;
     Integer cloudId;
     Integer mpId;
@@ -17,8 +18,17 @@ public class StatStorageItem {
         this.props = new HashMap<String, String>();
     }
 
-    public StatStorageItem(String type, Integer cloudId, Integer mpId, Integer appId, long timestamp) {
+    /**
+     * @param statType - type of statistic, e.g. "latency", "capacity"...
+     * @param type - appType, e.g. "MEI"
+     * @param cloudId
+     * @param mpId
+     * @param appId
+     * @param timestamp
+     */
+    public StatStorageItem(String statType, String type, Integer cloudId, Integer mpId, Integer appId, long timestamp) {
         this();
+        setStatType(statType);
         setType(type);
         setCloudId(cloudId);
         setMpId(mpId);
@@ -34,6 +44,14 @@ public class StatStorageItem {
     public StatStorageItem addProp(String key, String value) {
         props.put(key, value);
         return this;
+    }
+
+    public String getStatType() {
+        return statType;
+    }
+
+    public void setStatType(String statType) {
+        this.statType = statType;
     }
 
     public String getType() {

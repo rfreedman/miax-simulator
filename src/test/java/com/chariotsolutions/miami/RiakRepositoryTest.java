@@ -17,6 +17,7 @@ import static junit.framework.Assert.assertNotNull;
 
 public class RiakRepositoryTest {
 
+    /*
     @Test
     public void testDeleteCurrentStats() throws Exception {
 
@@ -36,6 +37,7 @@ public class RiakRepositoryTest {
         
         itemsDeleted = repo.deleteCurrentStats();
         assertEquals("unexpected number of items deleted", 0, itemsDeleted);
+
 
         StatStorageItem item = new StatStorageItem("MEI", 1, 2, 3, new Date().getTime())
                 .addStat("foo", 100)
@@ -62,6 +64,7 @@ public class RiakRepositoryTest {
         duration = after.getTime() - before.getTime();
         System.out.println("deleted " + itemsDeleted + " items in " + duration + " msec.");
         assertEquals("unexpected number of items deleted", 25000, itemsDeleted);
+
     }
 
 
@@ -361,4 +364,5 @@ public class RiakRepositoryTest {
             return description + " " + getDuration() + " msec.";
         }
     }
+    */
 }

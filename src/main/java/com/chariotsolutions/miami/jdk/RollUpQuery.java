@@ -5,7 +5,7 @@ import java.util.*;
 // rolls up data for one app type across all clouds/instances/mpids,
 // providing one 'row' of stats as a hashmap - this is absolute worst-case
 public class RollUpQuery {
-
+/*
     private static RiakRepository repo;
 
     public RollUpQuery() {
@@ -89,4 +89,5 @@ public class RollUpQuery {
 
         return cloudRollups;
     }
+    */
 }

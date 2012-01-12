@@ -1,5 +1,7 @@
 package com.chariotsolutions.miami.jdk;
 
+import org.java.util.concurrent.NotifyingBlockingThreadPoolExecutor;
+
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.InetAddress;
@@ -8,8 +10,7 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.concurrent.*;
 
 /**
  * Listens for stats messages
@@ -17,12 +18,22 @@ import java.util.concurrent.Executors;
 public class StatsClient implements Runnable {
     private final static Database db = new Database();
     private int port;
+    private static ThreadPoolExecutor threadPool;
+
+    static {
+        initThreadPool();
+    }
 
     public StatsClient(int port) {
         this.port = port;
+        //initThreadPool();
     }
 
     public static void main(String[] args) throws IOException {
+        final int NUM_CLIENTS = 64; // the ports to listen on - port numbers 10000 to 10000 + NUM_CLIENTS - 1
+        // TODO - get the list of ports from configuration
+
+        /*
         new Thread(new Runnable() {
             public void run() {
                 while(true) {
@@ -41,10 +52,14 @@ public class StatsClient implements Runnable {
                 }
             }
         }).start();
-        for(int i=1; i<21; i++) {
+        */
+
+        int portcount = 0;
+        for(int i=0; i < NUM_CLIENTS; i++) {
             new Thread(new StatsClient(10000+i)).start();
+            portcount += 1;
         }
-        System.out.println("Threads launched...");
+        System.out.println(portcount + " Threads launched...");
     }
 
     public void run() {
@@ -78,12 +93,9 @@ public class StatsClient implements Runnable {
                 data.order(ByteOrder.LITTLE_ENDIAN);
                 StatsMessage msg = StatsMessage.readHeader(data);
                 msg.setAppInstance(db.getAppInstance(msg.getApplicationId()));
-                ExecutorService exec = processors.get(msg.getApplicationId());
-                if(exec == null) {
-                    exec = Executors.newSingleThreadExecutor();
-                    processors.put(msg.getApplicationId(), exec);
-                }
-                exec.execute(msg);
+
+                threadPool.execute(msg);
+
                 packet.setData(new byte[4096]);
                 packet.setLength(buf.length);
             }
@@ -91,4 +103,32 @@ public class StatsClient implements Runnable {
             e.printStackTrace();
         }
     }
+
+
+    private static void initThreadPool() {
+        int poolSize = 64*2; // 64 ports, 2 stat packets each - should be no waiting
+        int queueSize = poolSize * 2; // recommended queue size
+        int threadKeepAliveTime = 50;
+        TimeUnit threadKeepAliveTimeUnit = TimeUnit.MILLISECONDS;
+        int maxBlockingTime = 10;
+        TimeUnit maxBlockingTimeUnit = TimeUnit.MILLISECONDS;
+
+        Callable<Boolean> blockingTimeoutCallback = new Callable<Boolean>() {
+            @Override
+            public Boolean call() throws Exception {
+                System.out.println("waiting for task insertion...");
+                return true;
+            }
+        };
+
+
+        threadPool = new NotifyingBlockingThreadPoolExecutor(
+                poolSize,
+                queueSize,
+                threadKeepAliveTime, threadKeepAliveTimeUnit,
+                maxBlockingTime, maxBlockingTimeUnit,
+                blockingTimeoutCallback
+        );
+    }
+
 }

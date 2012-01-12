@@ -14,6 +14,7 @@ import java.util.List;
 
 public class DefunctRiakRepositoryTest {
 
+    /*
     @Test
     public void testBasicStoreAndRetrieve() throws Exception {
 
@@ -137,4 +138,5 @@ public class DefunctRiakRepositoryTest {
         //System.out.println(result);
         System.out.println(after.getTime() - before.getTime() + " ms.");
     }
+    */
 }

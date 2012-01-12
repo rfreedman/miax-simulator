@@ -16,14 +16,17 @@ public class AppInstance implements Serializable {
     private long configuredNanos;
     private int lastSequenceNumber;
 
-    private static RiakRepository repo = null;
+    //private static RiakRepository repo = null;
+
+    private static MongoRepository repo = null;
 
     private static int maxRetries = 3;
 
     public AppInstance() {
         try {
             if(repo == null) {
-                repo = new RiakRepository();
+                //repo = new RiakRepository();
+                repo = new MongoRepository();
             }
         } catch(Exception ex) {
             throw new RuntimeException(ex);
@@ -78,7 +81,7 @@ public class AppInstance implements Serializable {
         Map<String, Integer> statsMap = cdm.getStatsMap();
 
         StatsMeta meta = new StatsMeta(appId);
-        StatStorageItem item = new StatStorageItem("MEI", meta.cloudId, meta.mpId, meta.appId, new Date().getTime());
+        StatStorageItem item = new StatStorageItem("capacity", "MEI", meta.cloudId, meta.mpId, meta.appId, new Date().getTime());
 
         for(Map.Entry<String, Integer> entry : statsMap.entrySet()) {
             item.addStat(entry.getKey(), entry.getValue());
@@ -107,6 +110,44 @@ public class AppInstance implements Serializable {
             System.out.println("stored CapacityDataMessage with key: " + storageKey + " in " + duration + " msec. / " + tries + " tries");
         }
     }
+
+
+    public void storeStats(LatencyDataMessage ldm, int appId) {
+        Date before = new Date();
+        Map<String, Integer> statsMap = ldm.getStatsMap();
+
+        StatsMeta meta = new StatsMeta(appId);
+        StatStorageItem item = new StatStorageItem("latency", "MEI", meta.cloudId, meta.mpId, meta.appId, new Date().getTime());
+
+        for(Map.Entry<String, Integer> entry : statsMap.entrySet()) {
+            item.addStat(entry.getKey(), entry.getValue());
+        }
+
+        String storageKey = null;
+
+        int tries = 0;
+        Exception lastException = null;
+        for(int i = 0; i < maxRetries; i++) {
+            tries += 1;
+
+            try {
+                storageKey = repo.storeCurrentItem(item);
+            } catch(Exception ex) {
+               lastException = ex;
+            }
+            if(storageKey != null) break;
+        }
+
+        Date after = new Date();
+        long duration = after.getTime() - before.getTime();
+        if(storageKey == null) {
+            System.err.println("failed to store item after " + duration + " msec. / " + tries + " tries: " + lastException.toString());
+        } else {
+            System.out.println("stored LatencyDataMessage with key: " + storageKey + " in " + duration + " msec. / " + tries + " tries");
+        }
+    }
+
+
 
     class StatsMeta {
         public int cloudId;

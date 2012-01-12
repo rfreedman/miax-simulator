@@ -10,17 +10,29 @@ import java.nio.ByteOrder;
  */
 public class ConfigPacket {
     private static final int PACKET_SIZE=2612;
+    private static byte[] PACKET_TEMPLATE = null;
     private ByteBuffer buffer;
 
     public ConfigPacket(int applicationID) throws IOException {
         buffer = ByteBuffer.allocateDirect(PACKET_SIZE);
         buffer.order(ByteOrder.LITTLE_ENDIAN);
-        InputStream in = getClass().getResourceAsStream("/config_packet.bin");
-        byte[] temp = new byte[PACKET_SIZE];
-        if(in.read(temp, 0, PACKET_SIZE) != PACKET_SIZE) throw new IllegalStateException("Expecting to read whole buffer in one go!");
-        in.close();
-        buffer.put(temp);
+        initializePacketTemplate(applicationID);
+        buffer.put(PACKET_TEMPLATE);
         buffer.putInt(2, applicationID);
+    }
+
+    private synchronized void initializePacketTemplate(int applicationID) throws IOException {
+        if(PACKET_TEMPLATE == null) {
+            InputStream in = getClass().getResourceAsStream("/config_packet.bin");
+            if(in == null) {
+                throw new RuntimeException("failed to load config_packet.bin for applicationID " + applicationID);
+            }
+
+            PACKET_TEMPLATE = new byte[PACKET_SIZE];
+            if(in.read(PACKET_TEMPLATE, 0, PACKET_SIZE) != PACKET_SIZE) throw new IllegalStateException("Expecting to read whole buffer in one go!");
+            in.close();
+        }
+
     }
 
     public void prepare(short sequenceNum) {
@@ -35,6 +47,6 @@ public class ConfigPacket {
     public int getSize() {return PACKET_SIZE;}
 
     public static void main(String[] args) throws IOException {
-        new ConfigPacket(43562).getBuffer();
+       System.out.println( new ConfigPacket(43562).getBuffer());
     }
 }
