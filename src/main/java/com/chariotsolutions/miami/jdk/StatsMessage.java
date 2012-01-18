@@ -1,6 +1,7 @@
 package com.chariotsolutions.miami.jdk;
 
 import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.util.ArrayList;
 
 /**
@@ -13,6 +14,16 @@ public class StatsMessage implements Runnable {
     private ChildMessage[] children;
     private ByteBuffer networkData;
     private AppInstance instance;
+
+    private byte[] msgBytes;
+
+    public StatsMessage(byte[] bytes) {
+        this.msgBytes = bytes;
+    }
+
+    public StatsMessage() {
+
+    }
 
     private StatsMessage(int sequence, int applicationId, long nanosSinceEpoch, ByteBuffer networkData) {
         this.sequence = sequence;
@@ -34,7 +45,17 @@ public class StatsMessage implements Runnable {
     }
 
     public void run() {
-        synchronized(instance) {
+        //synchronized(instance) {
+        {
+            if(msgBytes != null) {
+                this.networkData = ByteBuffer.wrap(msgBytes);
+                networkData.order(ByteOrder.LITTLE_ENDIAN);
+                this.sequence = networkData.getShort();
+                this.applicationId = networkData.getInt();
+                this.nanosSinceEpoch = networkData.getLong();
+                this.msgBytes = null;
+            }
+
             double elapsedSeconds = (nanosSinceEpoch - instance.getLastUpdateNanos())/1000000d;
             instance.update(nanosSinceEpoch, sequence);
             ArrayList<ChildMessage> list = new ArrayList<ChildMessage>();
@@ -49,7 +70,8 @@ public class StatsMessage implements Runnable {
                 // Assumes this will process the buffer data
                 ChildMessage child = null;
                 switch (type) {
-                    case 1:
+
+                    case 1: // Latency Config Message
                         if(!reconfigured) {
                             instance.reconfigure(nanosSinceEpoch);
                             reconfigured = true;
@@ -58,7 +80,8 @@ public class StatsMessage implements Runnable {
                         child = lcm;
                         instance.createLatencyStats(child.getItem(), lcm.getStats());
                         break;
-                    case 2:
+
+                    case 2:   // Capacity Config Message
                         if(!reconfigured) {
                             instance.reconfigure(nanosSinceEpoch);
                             reconfigured = true;
@@ -67,7 +90,8 @@ public class StatsMessage implements Runnable {
                         child = ccm;
                         instance.createCapacityStats(child.getItem(), ccm.getStats());
                         break;
-                    case 3:
+
+                    case 3:   // Custom Config Message
                         if(!reconfigured) {
                             instance.reconfigure(nanosSinceEpoch);
                             reconfigured = true;
@@ -76,7 +100,8 @@ public class StatsMessage implements Runnable {
                         child = mcm;
                         instance.createCustomStats(child.getItem(), mcm.getStats());
                         break;
-                    case 4:
+
+                    case 4: // Latency Data
                         LatencyStats latencyStats = instance.getLatencyStats(item);
                         if(latencyStats != null) {
                             LatencyDataMessage ldm = new LatencyDataMessage(size, type, item, networkData, latencyStats, elapsedSeconds);
@@ -84,7 +109,8 @@ public class StatsMessage implements Runnable {
                             instance.storeStats(ldm, applicationId);
                         } // else wait for a configuration packet
                         break;
-                    case 5:
+
+                    case 5:  // Capacity Data
                         CapacityStats capacityStats = instance.getCapacityStats(item);
                         if(capacityStats != null) {
                             CapacityDataMessage cdm = new CapacityDataMessage(size, type, item, networkData, capacityStats, elapsedSeconds);
@@ -93,13 +119,15 @@ public class StatsMessage implements Runnable {
                             instance.storeStats(cdm, applicationId);
                         } // else wait for a configuration packet
                         break;
-                    case 6:
+
+                    case 6: // Custom Data
                         CustomStats customStats = instance.getCustomStats(item);
                         if(customStats != null) {
                             CustomDataMessage mdm = new CustomDataMessage(size, type, item, networkData, customStats, elapsedSeconds);
                             child = mdm;
                         } // else wait for a configuration packet
                         break;
+
                     default:
                         child = new ChildMessage(size, type, item, networkData);
                 }

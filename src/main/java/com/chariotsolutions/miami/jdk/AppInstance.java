@@ -89,25 +89,27 @@ public class AppInstance implements Serializable {
 
         String storageKey = null;
 
-        int tries = 0;
+       // int tries = 0;
         Exception lastException = null;
-        for(int i = 0; i < maxRetries; i++) {
-            tries += 1;
+       // for(int i = 0; i < maxRetries; i++) {
+       //     tries += 1;
 
             try {
                 storageKey = repo.storeCurrentItem(item);
             } catch(Exception ex) {
                lastException = ex;
             }
-            if(storageKey != null) break;
-        }
+        //    if(storageKey != null) break;
+        //}
 
         Date after = new Date();
         long duration = after.getTime() - before.getTime();
         if(storageKey == null) {
-            System.err.println("failed to store item after " + duration + " msec. / " + tries + " tries: " + lastException.toString());
+            //System.err.println("failed to store item after " + duration + " msec. / " + tries + " tries: " + lastException.toString());
+            System.err.println("failed to store item after " + duration + " msec. : " + lastException.toString());
         } else {
-            System.out.println("stored CapacityDataMessage with key: " + storageKey + " in " + duration + " msec. / " + tries + " tries");
+            //System.out.println("stored CapacityDataMessage with key: " + storageKey + " in " + duration + " msec. / " + tries + " tries");
+            System.out.println("stored CapacityDataMessage with key: " + storageKey + " in " + duration + " msec.");
         }
     }
 
@@ -125,6 +127,7 @@ public class AppInstance implements Serializable {
 
         String storageKey = null;
 
+        /*
         int tries = 0;
         Exception lastException = null;
         for(int i = 0; i < maxRetries; i++) {
@@ -137,13 +140,22 @@ public class AppInstance implements Serializable {
             }
             if(storageKey != null) break;
         }
+        */
+        Exception lastException = null;
+        try {
+            storageKey = repo.storeCurrentItem(item);
+        } catch(Exception ex) {
+            lastException = ex;
+        }
 
         Date after = new Date();
         long duration = after.getTime() - before.getTime();
         if(storageKey == null) {
-            System.err.println("failed to store item after " + duration + " msec. / " + tries + " tries: " + lastException.toString());
+            //System.err.println("failed to store item after " + duration + " msec. / " + tries + " tries: " + lastException.toString());
+            System.err.println("failed to store item after " + duration + " msec.: " + lastException.toString());
         } else {
-            System.out.println("stored LatencyDataMessage with key: " + storageKey + " in " + duration + " msec. / " + tries + " tries");
+            //System.out.println("stored LatencyDataMessage with key: " + storageKey + " in " + duration + " msec. / " + tries + " tries");
+            System.out.println("stored LatencyDataMessage with key: " + storageKey + " in " + duration + " msec.");
         }
     }
 

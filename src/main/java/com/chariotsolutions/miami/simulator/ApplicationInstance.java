@@ -24,7 +24,7 @@ public class ApplicationInstance {
 
     private int appType;
 
-    private /*synchronized*/ void sendDataGram(DatagramPacket datagram, int port) throws IOException{
+    private synchronized void sendDataGram(DatagramPacket datagram, int port) throws IOException{
        MulticastSocket socket = socketMap.get(port);
        if(socket == null) {
            socket = new MulticastSocket(port);
