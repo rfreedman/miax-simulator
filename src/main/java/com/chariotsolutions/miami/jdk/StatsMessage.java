@@ -125,6 +125,7 @@ public class StatsMessage implements Runnable {
                         if(customStats != null) {
                             CustomDataMessage mdm = new CustomDataMessage(size, type, item, networkData, customStats, elapsedSeconds);
                             child = mdm;
+                            instance.storeStats(mdm, applicationId);
                         } // else wait for a configuration packet
                         break;
 

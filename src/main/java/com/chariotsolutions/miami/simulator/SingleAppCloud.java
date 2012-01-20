@@ -14,8 +14,8 @@ public class SingleAppCloud implements Runnable {
     private final ApplicationInstance[] apps;
 
     private static final int interval = 2000; // number of msec. between sending packets
-    private static final int numClouds = 24; // 24
-    private static final int appsPerCloud = 96; //64; //32;
+    private static final int numClouds = 1; //24;
+    private static final int appsPerCloud = 1; //64; 
 
     private int index;
 
@@ -78,10 +78,13 @@ public class SingleAppCloud implements Runnable {
         final int delay = interval / apps.length;
         System.out.println("cloud: " + this.getIndex() + " sending a data packet every " + delay + " msec.");
         try {
+
             for (ApplicationInstance app : apps) {
                 app.sendConfigPacket();
-                Thread.sleep(500);
+                Thread.sleep(800);
             }
+
+            apps[0].sendConfigPacket();
 
             for(int i=0; i<numberOfLoops; i++) {
                 long before = new Date().getTime();

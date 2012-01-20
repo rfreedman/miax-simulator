@@ -57,6 +57,10 @@ public class CustomStats {
         return values;
     }
 
+    public Field[] getFields() {
+        return this.fields;
+    }
+    
     public void print() {
         System.out.println("CUSTOM "+name);
         for (int i = 0; i < fields.length; i++) {

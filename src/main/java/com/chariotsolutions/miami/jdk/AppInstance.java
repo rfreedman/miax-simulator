@@ -18,15 +18,16 @@ public class AppInstance implements Serializable {
 
     //private static RiakRepository repo = null;
 
-    private static MongoRepository repo = null;
-
+    //private static MongoRepository repo = null;
+    private static RDBRepository repo = null;
     private static int maxRetries = 3;
 
     public AppInstance() {
         try {
             if(repo == null) {
                 //repo = new RiakRepository();
-                repo = new MongoRepository();
+                //repo = new MongoRepository();
+                repo = new RDBRepository();
             }
         } catch(Exception ex) {
             throw new RuntimeException(ex);
@@ -81,7 +82,7 @@ public class AppInstance implements Serializable {
         Map<String, Integer> statsMap = cdm.getStatsMap();
 
         StatsMeta meta = new StatsMeta(appId);
-        StatStorageItem item = new StatStorageItem("capacity", "MEI", meta.cloudId, meta.mpId, meta.appId, new Date().getTime());
+        StatStorageItem item = new StatStorageItem(cdm.getStats().getName(), "capacity", "MEI", meta.cloudId, meta.mpId, meta.appId, new Date().getTime());
 
         for(Map.Entry<String, Integer> entry : statsMap.entrySet()) {
             item.addStat(entry.getKey(), entry.getValue());
@@ -119,7 +120,7 @@ public class AppInstance implements Serializable {
         Map<String, Integer> statsMap = ldm.getStatsMap();
 
         StatsMeta meta = new StatsMeta(appId);
-        StatStorageItem item = new StatStorageItem("latency", "MEI", meta.cloudId, meta.mpId, meta.appId, new Date().getTime());
+        StatStorageItem item = new StatStorageItem(ldm.getStats().getName(), "latency", "MEI", meta.cloudId, meta.mpId, meta.appId, new Date().getTime());
 
         for(Map.Entry<String, Integer> entry : statsMap.entrySet()) {
             item.addStat(entry.getKey(), entry.getValue());
@@ -159,7 +160,34 @@ public class AppInstance implements Serializable {
         }
     }
 
+    public void storeStats(CustomDataMessage cdm, int appId) {
+        Date before = new Date();
+        Map<String, Integer> statsMap = cdm.getStatsMap();
 
+        StatsMeta meta = new StatsMeta(appId);
+        StatStorageItem item = new StatStorageItem(cdm.getStats().getName(), "custom", "MEI", meta.cloudId, meta.mpId, meta.appId, new Date().getTime());
+
+        for(Map.Entry<String, Integer> entry : statsMap.entrySet()) {
+            item.addStat(entry.getKey(), entry.getValue());
+        }
+
+        String storageKey = null;
+
+        Exception lastException = null;
+        try {
+            storageKey = repo.storeCurrentItem(item);
+        } catch(Exception ex) {
+            lastException = ex;
+        }
+
+        Date after = new Date();
+        long duration = after.getTime() - before.getTime();
+        if(storageKey == null) {
+            System.err.println("failed to store item after " + duration + " msec.: " + lastException.toString());
+        } else {
+            System.out.println("stored CustomDataMessage with key: " + storageKey + " in " + duration + " msec.");
+        }
+    }
 
     class StatsMeta {
         public int cloudId;

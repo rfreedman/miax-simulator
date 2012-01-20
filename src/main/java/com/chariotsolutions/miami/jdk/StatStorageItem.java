@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class StatStorageItem {
+    String statName;
     String statType;
     String type;
     Integer cloudId;
@@ -26,8 +27,9 @@ public class StatStorageItem {
      * @param appId
      * @param timestamp
      */
-    public StatStorageItem(String statType, String type, Integer cloudId, Integer mpId, Integer appId, long timestamp) {
+    public StatStorageItem(String statName, String statType, String type, Integer cloudId, Integer mpId, Integer appId, long timestamp) {
         this();
+        this.statName = statName;
         setStatType(statType);
         setType(type);
         setCloudId(cloudId);
@@ -46,6 +48,14 @@ public class StatStorageItem {
         return this;
     }
 
+    public String getStatName() {
+        return statName;
+    }
+
+    public void setStatName(String statName) {
+        this.statName = statName;
+    }
+    
     public String getStatType() {
         return statType;
     }
