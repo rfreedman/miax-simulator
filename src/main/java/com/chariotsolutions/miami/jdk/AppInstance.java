@@ -110,7 +110,7 @@ public class AppInstance implements Serializable {
             System.err.println("failed to store item after " + duration + " msec. : " + lastException.toString());
         } else {
             //System.out.println("stored CapacityDataMessage with key: " + storageKey + " in " + duration + " msec. / " + tries + " tries");
-            System.out.println("stored CapacityDataMessage with key: " + storageKey + " in " + duration + " msec.");
+            //System.out.println("stored CapacityDataMessage with key: " + storageKey + " in " + duration + " msec.");
         }
     }
 
@@ -156,7 +156,7 @@ public class AppInstance implements Serializable {
             System.err.println("failed to store item after " + duration + " msec.: " + lastException.toString());
         } else {
             //System.out.println("stored LatencyDataMessage with key: " + storageKey + " in " + duration + " msec. / " + tries + " tries");
-            System.out.println("stored LatencyDataMessage with key: " + storageKey + " in " + duration + " msec.");
+            //System.out.println("stored LatencyDataMessage with key: " + storageKey + " in " + duration + " msec.");
         }
     }
 
@@ -185,7 +185,7 @@ public class AppInstance implements Serializable {
         if(storageKey == null) {
             System.err.println("failed to store item after " + duration + " msec.: " + lastException.toString());
         } else {
-            System.out.println("stored CustomDataMessage with key: " + storageKey + " in " + duration + " msec.");
+           // System.out.println("stored CustomDataMessage with key: " + storageKey + " in " + duration + " msec.");
         }
     }
 

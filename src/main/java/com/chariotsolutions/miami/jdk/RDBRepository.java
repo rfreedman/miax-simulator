@@ -2,27 +2,80 @@ package com.chariotsolutions.miami.jdk;
 
 import org.apache.commons.dbcp.cpdsadapter.DriverAdapterCPDS;
 import org.apache.commons.dbcp.datasources.SharedPoolDataSource;
-import org.java.util.concurrent.NotifyingBlockingThreadPoolExecutor;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.Statement;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
+import java.util.*;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class RDBRepository implements Repository {
 
+    class BatchUpdater implements Runnable {
+        private static final int MAX_BATCH_SIZE = 50;
+        private final Queue<StatStorageItem> items = new ConcurrentLinkedQueue<StatStorageItem>();
+        private String statName = null;
+
+        public BatchUpdater(String statName) {
+            this.statName = statName;
+        }
+
+        public void addItem(StatStorageItem item) {
+            items.add(item);
+        }
+
+        public void run() {
+            while(true) {
+                Connection connection = null;
+                long before = new Date().getTime();
+                try {
+                    connection = getConnection();
+                    long afterConnection = new Date().getTime();
+
+                    PreparedStatement replaceStatement = null;
+                    int batchSize = 0;
+
+                    for(int i = 0; i < MAX_BATCH_SIZE; i++) {
+
+                        StatStorageItem item = items.poll();
+                        if(item == null) {
+                            break;
+                        }
+
+                        if(replaceStatement == null) {
+                            replaceStatement = connection.prepareStatement(createReplaceSql(item));
+                        }
+
+                        bindReplaceStatement(item, replaceStatement);
+                        replaceStatement.addBatch();
+                        batchSize += 1;
+                    }
+
+                    if(batchSize > 0) {
+                        replaceStatement.executeUpdate();
+                        long afterReplace = new Date().getTime();
+                        System.out.println("storage of " + batchSize + " " + statName + " items took " + (afterReplace - before) + " msec. including " + (afterConnection - before) + " msec. for connection");
+                    }
+
+                } catch(Exception ex) {
+                    ex.printStackTrace();
+                }  finally {
+                    if(connection != null) {
+                        try{connection.close();} catch(Exception ex){}
+                    }
+                }
+
+                //try{Thread.sleep(50);}catch(InterruptedException ex){}
+            }
+        }
+    }
+
     private static DataSource dataSource;
 
-    private static ThreadPoolExecutor threadPool;
-
     private static final Set<String> KNOWN_STATS = new HashSet<String>();
+
+    private Map<String, BatchUpdater> batchUpdaters = new HashMap<String, BatchUpdater>();
 
     static {
         try {
@@ -53,14 +106,14 @@ public class RDBRepository implements Repository {
 
             SharedPoolDataSource tds = new SharedPoolDataSource();
             tds.setConnectionPoolDataSource(cpds);
-            tds.setMaxActive(100);
+            tds.setMaxActive(200);  // 100
             tds.setMaxWait(100);
 
             dataSource = tds;
 
             testConnection();
             
-            initThreadPool();
+            //initThreadPool();
         } catch (Exception ex) {
             throw new RuntimeException(ex);
         }
@@ -68,18 +121,21 @@ public class RDBRepository implements Repository {
 
     public static void testConnection() throws Exception {
         Connection connection = null;
-
+        System.out.println("starting connection test: " + new Date());
         try {
             connection = getConnection();
             Statement statement = connection.createStatement();
             statement.execute("select 1 from dual");
-            System.out.println("db connection validated");
+            System.out.println("db connection validated: " + new Date());
+        } catch(Exception ex) {
+            System.out.println("db connection validation failed: " + new Date());
         } finally {
             if(connection != null) {
                 try{connection.close();}catch(Exception ex){}
             }
         }
     }
+
     public static Connection getConnection() throws Exception {
         return dataSource.getConnection();
     }
@@ -94,18 +150,32 @@ public class RDBRepository implements Repository {
     public String storeCurrentItem(StatStorageItem item) throws Exception {
 
         if(KNOWN_STATS.contains(item.getStatName())) {
-            storeCurrentStatsDynamic(item);
+            //storeCurrentStatsDynamic(item);
+            batchItem(item);
         } else {
             System.out.println("unknown stat: " + item.getStatName());
         }
         return "";
     }
 
+    private void batchItem(StatStorageItem item) {
+        BatchUpdater updater = batchUpdaters.get(item.getStatName());
+        if(updater == null) {
+            updater = new BatchUpdater(item.getStatName());
+            batchUpdaters.put(item.getStatName(), updater);
+            new Thread(updater).start();
+        }
+        updater.addItem(item);
+    }
+
     private void storeCurrentStatsDynamic(StatStorageItem item) throws Exception {
         Connection connection = null;
         try {
+            long before = new Date().getTime();
             connection = getConnection();
+            long afterConnection = new Date().getTime();
 
+            /*
             PreparedStatement updateStatement = connection.prepareStatement(createUpdateSql(item));
             bindUpdateStatement(item, updateStatement);
             int rowsUpdated = updateStatement.executeUpdate();
@@ -115,6 +185,13 @@ public class RDBRepository implements Repository {
                 bindInsertStatement(item, insertStatement);
                 insertStatement.executeUpdate();
             }
+            */
+            PreparedStatement replaceStatement = connection.prepareStatement(createReplaceSql(item));
+            bindReplaceStatement(item, replaceStatement);
+            replaceStatement.executeUpdate();
+            long afterReplace = new Date().getTime();
+            System.out.println("storage took " + (afterReplace - before) + " msec. including " + (afterConnection - before) + " msec. for connection");
+
 
         } catch (Exception ex) {
             ex.printStackTrace();
@@ -130,6 +207,41 @@ public class RDBRepository implements Repository {
         }
     }
 
+
+    private String createReplaceSql(StatStorageItem item)  {
+        StringBuilder replaceSql = new StringBuilder("replace into ")
+                .append(item.getStatName())
+                .append("(type, cloud, instance, mpid, timestamp");
+
+        for(Map.Entry<String, Integer> entry: item.getStats().entrySet()) {
+            replaceSql.append(", ").append(entry.getKey());
+        }
+        replaceSql.append(") values ( ?");
+
+        int cols = item.getStats().size() + 4;
+        for(int i = 0; i < cols; i++) {
+            replaceSql.append(", ?");
+        }
+
+        replaceSql.append(");");
+
+        return replaceSql.toString();
+    }
+
+    private void bindReplaceStatement(StatStorageItem item, PreparedStatement replaceStatement) throws Exception{
+         int col = 0;
+
+         replaceStatement.setString(++col, item.type);
+         replaceStatement.setInt(++col, item.getCloudId());// cloud
+         replaceStatement.setInt(++col, item.getAppId()); // instance
+         replaceStatement.setInt(++col, item.getMpId()); // mpid
+         replaceStatement.setLong(++col, item.getTimestamp());
+
+         for(Map.Entry<String, Integer> entry: item.getStats().entrySet()) {
+             replaceStatement.setInt(++col, entry.getValue());
+         }
+
+     }
 
     // TODO: get rid of 'type' as a column - not needed
 
@@ -221,87 +333,5 @@ public class RDBRepository implements Repository {
     @Override
     public Collection<StatStorageItem> getCurrentItems(String type, Integer cloudId, Integer mpId, Integer appId) throws Exception {
         return null;
-    }
-
-
-    private static void initThreadPool() {
-        int poolSize = 10;
-        int queueSize = 10000;
-        int threadKeepAliveTime = 10;
-        TimeUnit threadKeepAliveTimeUnit = TimeUnit.MILLISECONDS;
-        int maxBlockingTime = 100;
-        TimeUnit maxBlockingTimeUnit = TimeUnit.MILLISECONDS;
-
-        Callable<Boolean> blockingTimeoutCallback = new Callable<Boolean>() {
-            @Override
-            public Boolean call() throws Exception {
-                System.out.println("waiting for task insertion...");
-                return true;
-            }
-        };
-
-
-        threadPool = new NotifyingBlockingThreadPoolExecutor(
-                poolSize,
-                queueSize,
-                threadKeepAliveTime, threadKeepAliveTimeUnit,
-                maxBlockingTime, maxBlockingTimeUnit,
-                blockingTimeoutCallback
-        );
-    }
-
-    class Updater implements Runnable {
-
-        private String type;
-        private int cloud;
-        private int instance;
-        private int mpid;
-        private int cap_100;
-
-        public Updater(String type, int cloud, int instance, int mpid, int cap_100) {
-            this.type = type;
-            this.cloud = cloud;
-            this.instance = instance;
-            this.mpid = mpid;
-            this.cap_100 = cap_100;
-        }
-
-        public void run() {
-            Connection connection = null;
-            try {
-                connection = getConnection();
-
-                PreparedStatement updateStatement = connection.prepareStatement("update mei_capacity set cap_100 = ? where type = ? and cloud = ? and instance = ? and mpid = ?");
-
-                updateStatement.setInt(1, cap_100);
-                updateStatement.setString(2, type);
-                updateStatement.setInt(3, cloud);// cloud
-                updateStatement.setInt(4, instance); // instance
-                updateStatement.setInt(5, mpid); // mpid
-                int rowsUpdated = updateStatement.executeUpdate();
-
-                if (rowsUpdated == 0) {
-                    PreparedStatement insertStatement = connection.prepareStatement("insert into mei_capacity(type, cloud, instance, mpid, cap_100) values (?, ?, ?, ?, ?)");
-                    insertStatement.setString(1, type);
-                    insertStatement.setInt(2, cloud);// cloud
-                    insertStatement.setInt(3, instance); // instance
-                    insertStatement.setInt(4, mpid); // mpid
-                    insertStatement.setInt(5, cap_100); // cap_100
-                    insertStatement.executeUpdate();
-                }
-
-            } catch (Throwable t) {
-                t.printStackTrace();
-                System.exit(1);
-            } finally {
-                if (connection != null) {
-                    try {
-                        connection.close();
-                    } catch (Exception ex) {
-                        //
-                    }
-                }
-            }
-        }
     }
 }

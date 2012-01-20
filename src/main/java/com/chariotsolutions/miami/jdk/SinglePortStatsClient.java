@@ -84,11 +84,11 @@ public class SinglePortStatsClient implements Runnable {
 
 
     private static void initThreadPool() {
-        int poolSize = 64*2; // 64 ports, 2 stat packets each - should be no waiting
+        int poolSize = 200; // 64 ports, 2 stat packets each - should be no waiting
         int queueSize = poolSize * 2; // recommended queue size
         int threadKeepAliveTime = 50;
         TimeUnit threadKeepAliveTimeUnit = TimeUnit.MILLISECONDS;
-        int maxBlockingTime = 10;
+        int maxBlockingTime = 100;
         TimeUnit maxBlockingTimeUnit = TimeUnit.MILLISECONDS;
 
         Callable<Boolean> blockingTimeoutCallback = new Callable<Boolean>() {

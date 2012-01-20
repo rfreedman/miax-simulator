@@ -14,8 +14,8 @@ public class SingleAppCloud implements Runnable {
     private final ApplicationInstance[] apps;
 
     private static final int interval = 2000; // number of msec. between sending packets
-    private static final int numClouds = 1; //24;
-    private static final int appsPerCloud = 1; //64; 
+    private static final int numClouds = 24;
+    private static final int appsPerCloud = 32; //64;
 
     private int index;
 
