@@ -39,9 +39,22 @@ public class SinglePortStatsClient implements Runnable {
         this.port = port;
     }
 
-    public static void main(String[] args) throws IOException {
-        new Thread(new SinglePortStatsClient(BROADCAST_ADDRESS, BROADCAST_PORT)).start();
-        System.out.println("Single Threaded sequential packet processor started...");
+    public static void main(String[] args) throws Exception {
+        try {
+            Thread  t = new Thread(new SinglePortStatsClient(BROADCAST_ADDRESS, BROADCAST_PORT));
+            t.start();
+            System.out.println("Single Threaded sequential packet processor started...");
+            t.join();
+        } catch(Throwable t) {
+           System.err.println("exit due to error");
+           t.printStackTrace();
+           System.err.println("exit due to error");
+           Thread.sleep(1000);
+           System.exit(-9999);
+        }
+        System.err.println("exited normally");
+        Thread.sleep(1000);
+        System.exit(5);
     }
 
     public /*synchronized*/ void incrementMessagesReceived() {
@@ -78,13 +91,14 @@ public class SinglePortStatsClient implements Runnable {
 
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            //e.printStackTrace();
+            throw new RuntimeException(e);
         }
     }
 
 
     private static void initThreadPool() {
-        int poolSize = 200; // 64 ports, 2 stat packets each - should be no waiting
+        int poolSize = 200; //500; //200;
         int queueSize = poolSize * 2; // recommended queue size
         int threadKeepAliveTime = 50;
         TimeUnit threadKeepAliveTimeUnit = TimeUnit.MILLISECONDS;

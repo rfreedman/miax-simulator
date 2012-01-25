@@ -53,20 +53,25 @@ public class RDBRepository implements Repository {
                     }
 
                     if(batchSize > 0) {
+                        connection.setAutoCommit(false);
                         replaceStatement.executeUpdate();
+                        connection.commit();
                         long afterReplace = new Date().getTime();
                         System.out.println("storage of " + batchSize + " " + statName + " items took " + (afterReplace - before) + " msec. including " + (afterConnection - before) + " msec. for connection");
                     }
 
                 } catch(Exception ex) {
+                    if(connection != null) {
+                        try{connection.rollback();}catch(Exception rex) {}
+                    }
                     ex.printStackTrace();
                 }  finally {
                     if(connection != null) {
-                        try{connection.close();} catch(Exception ex){}
+                        try{connection.setAutoCommit(true); connection.close();} catch(Exception ex){}
                     }
                 }
 
-                //try{Thread.sleep(50);}catch(InterruptedException ex){}
+                try{Thread.sleep(50);}catch(InterruptedException ex){}
             }
         }
     }
@@ -96,9 +101,15 @@ public class RDBRepository implements Repository {
             cpds.setPassword("miax");
             */
 
+            /*
             cpds.setUrl("jdbc:mysql://dpr1d1bps08:3306/user");
             cpds.setUser("rfreedman");
             cpds.setPassword("welcome1");
+            */
+
+            cpds.setUrl("jdbc:mysql://localhost:3306/test");
+            cpds.setUser("rfreedman");
+
 
 
             cpds.setPoolPreparedStatements(true);
@@ -106,7 +117,7 @@ public class RDBRepository implements Repository {
 
             SharedPoolDataSource tds = new SharedPoolDataSource();
             tds.setConnectionPoolDataSource(cpds);
-            tds.setMaxActive(200);  // 100
+            tds.setMaxActive(100);  // 100
             tds.setMaxWait(100);
 
             dataSource = tds;
@@ -150,8 +161,8 @@ public class RDBRepository implements Repository {
     public String storeCurrentItem(StatStorageItem item) throws Exception {
 
         if(KNOWN_STATS.contains(item.getStatName())) {
-            //storeCurrentStatsDynamic(item);
-            batchItem(item);
+            storeCurrentStatsDynamic(item);
+            //batchItem(item);
         } else {
             System.out.println("unknown stat: " + item.getStatName());
         }
